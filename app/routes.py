@@ -1,13 +1,13 @@
-from fastapi import APIRouter # type: ignore
-from pydantic import BaseModel
-from .utils import analyze_news
+# from fastapi import APIRouter # type: ignore
+# from pydantic import BaseModel
+# from .utils import analyze_news
 
-router = APIRouter()
+# router = APIRouter()
 
-class NewsInput(BaseModel):
-    text: str
+# class NewsInput(BaseModel):
+#     text: str
 
-@router.post("/analyze")
-def analyze(news: NewsInput):
-    result = analyze_news(news.text)
-    return result
+# @router.post("/analyze")
+# def analyze(news: NewsInput):
+#     result = analyze_news(news.text)
+#     return result

@@ -191,65 +191,53 @@ def determine_final_verdict(ai_response, sentiment_status, tweet_texts, lang):
     
     return f"\n{templates['verdict_title']}\n{verdict}"
 
-def analyze_news(text):
-    """Main enhanced analysis function"""
-    
-    # Detect language
-    detected_lang = detect_language(text)
-    
-    # Create enhanced prompt
-    enhanced_prompt = create_enhanced_prompt(text, detected_lang)
-    
-    # Gemini Analysis
-    try:
-        gemini_response = model.generate_content(enhanced_prompt)
-        ai_opinion = getattr(gemini_response, "text", None)
-        if not ai_opinion:
-            ai_opinion = gemini_response.parts[0].text if gemini_response.parts else "No AI response."
-    except Exception as e:
-        error_msg = f"AI Analysis mein problem: {e}" if detected_lang == 'urdu_hindi' else f"AI Analysis error: {e}"
-        ai_opinion = error_msg
+import os
+import requests
+import json
+from typing import List, Optional
 
-    # Twitter Analysis  
-    try:
-        tweets = client.search_recent_tweets(query=text, max_results=10)
-        tweet_texts = [t.text for t in tweets.data] if tweets and tweets.data else []
-    except Exception as e:
-        error_msg = f"Twitter data nahi mila: {e}" if detected_lang == 'urdu_hindi' else f"Twitter error: {e}"
-        tweet_texts = [error_msg]
+def analyze_news(text: str) -> dict:
+    """
+    Analyze the given news text and return detailed analysis info.
+    """
 
-    # Sentiment Analysis
-    try:
-        valid_tweets = [t for t in tweet_texts if not any(err in t.lower() for err in ['error', 'nahi mila'])]
-        if valid_tweets:
-            sentiments = [TextBlob(t).sentiment.polarity for t in valid_tweets]
-            avg_sentiment = sum(sentiments) / len(sentiments)
-            
-            if avg_sentiment > 0.1:
-                sentiment_status = "Positive"
-            elif avg_sentiment < -0.1:
-                sentiment_status = "Negative" 
-            else:
-                sentiment_status = "Neutral"
-        else:
-            sentiment_status = "Unknown"
-    except:
-        sentiment_status = "Unknown"
+    # 1. Language detection (dummy example, replace with actual API if you want)
+    detected_language = "en"  # Let's assume English for now
 
-    # Format complete response
-    formatted_response = format_final_response(ai_opinion, sentiment_status, tweet_texts, detected_lang)
-    
-    # Add final verdict
-    final_verdict = determine_final_verdict(ai_opinion, sentiment_status, tweet_texts, detected_lang)
-    complete_response = formatted_response + final_verdict
-    
-    return {
-        "complete_response": complete_response,
-        "ai_analysis": ai_opinion,
-        "public_sentiment": sentiment_status, 
-        "sample_tweets": tweet_texts,
-        "detected_language": detected_lang
+    # 2. Fake news detection - dummy heuristic:
+    # Let's pretend if "fake" or "hoax" appears, it's fake.
+    is_fake = any(keyword in text.lower() for keyword in ["fake", "hoax", "false"])
+    confidence = 0.85 if is_fake else 0.6
+
+    # 3. Simple analysis summary
+    analysis = f"This news is {'likely fake' if is_fake else 'likely genuine'} with confidence {confidence*100:.1f}%."
+
+    # 4. Sources (dummy example)
+    sources = ["https://news.example.com/original", "https://factcheck.example.com"]
+
+    # 5. Public sentiment - dummy (you can replace with actual sentiment analysis)
+    public_sentiment = "Negative" if is_fake else "Neutral"
+
+    # 6. Sample tweets - dummy data
+    sample_tweets = [
+        "This news seems suspicious...",
+        "I think this is true, based on other sources.",
+        "Hoax alert! Don't believe this."
+    ]
+
+    # Construct the response dictionary matching AnalysisResponse
+    response = {
+        "is_fake": is_fake,
+        "confidence": confidence,
+        "analysis": analysis,
+        "sources": sources,
+        "public_sentiment": public_sentiment,
+        "detected_language": detected_language,
+        "sample_tweets": sample_tweets,
     }
+
+    return response
+
 
 # Usage example
 if __name__ == "__main__":
